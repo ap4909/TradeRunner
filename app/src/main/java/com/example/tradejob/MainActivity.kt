@@ -1,23 +1,44 @@
+package com.example.tradejob
+
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.Book
+import androidx.compose.material.icons.filled.CurrencyExchange
+import androidx.compose.material.icons.outlined.Book
+import androidx.compose.material.icons.outlined.CurrencyExchange
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
-import androidx.compose.runtime.Composable
+import androidx.compose.material3.Tab
+import androidx.compose.material3.TabRow
+import androidx.compose.material3.Text
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
-import androidx.navigation.compose.rememberNavController
+import androidx.compose.ui.graphics.vector.ImageVector
 import com.example.tradejob.ui.theme.TradeJobTheme
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        val tabItems = listOf(
+            TabItem(
+                title = "Trade",
+                unselectedIcon = Icons.Outlined.CurrencyExchange,
+                selectedIcon = Icons.Filled.CurrencyExchange
+            ),
+            TabItem(
+                title = "Backtest",
+                unselectedIcon = Icons.Outlined.Book,
+                selectedIcon = Icons.Filled.Book
+            )
+        )
         setContent {
             TradeJobTheme {
                 // A surface container using the 'background' color from the theme
@@ -25,57 +46,44 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    // Set up the navigation
-                    val navController = rememberNavController()
-                    NavHost(navController = navController, startDestination = "tab1") {
-                        composable("tab1") { TabContent("Tab 1") }
-                        composable("tab2") { TabContent("Tab 2") }
+                    var selectedTabIndex by remember {
+                        mutableIntStateOf(0)
                     }
-                    // Set up the bottom navigation
-                    BottomNavigation {
-                        BottomNavigationItem(
-                            icon = { Icon(Icons.Default.Home, contentDescription = null) },
-                            label = { Text("Tab 1") },
-                            selected = navController.currentDestination?.route == "tab1",
-                            onClick = {
-                                navController.navigate("tab1") {
-                                    popUpTo(navController.graph.startDestinationRoute!!) {
-                                        saveState = true
-                                    }
+                    Column(
+                        modifier = Modifier.fillMaxSize()
+                    ){
+                        TabRow(selectedTabIndex = selectedTabIndex) {
+                            tabItems.forEachIndexed{index, item ->
+                            Tab(
+                                selected = index == selectedTabIndex,
+                                onClick = {
+                                    selectedTabIndex = index
+                                },
+                                text = {
+                                    Text(text = item.title)
+                                },
+                                icon = {
+                                    Icon(
+                                        imageVector = if (index == selectedTabIndex) {
+                                            item.selectedIcon
+                                        } else item.unselectedIcon,
+                                        contentDescription = item.title
+                                    )
                                 }
+                            )
+
                             }
-                        )
-                        BottomNavigationItem(
-                            icon = { Icon(Icons.Default.Settings, contentDescription = null) },
-                            label = { Text("Tab 2") },
-                            selected = navController.currentDestination?.route == "tab2",
-                            onClick = {
-                                navController.navigate("tab2") {
-                                    popUpTo(navController.graph.startDestinationRoute!!) {
-                                        saveState = true
-                                    }
-                                }
-                            }
-                        )
+                        }
                     }
+
                 }
             }
         }
     }
 }
 
-@Composable
-fun TabContent(tabTitle: String) {
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = {
-                    Text(text = tabTitle)
-                }
-            )
-        }
-    ) {
-        // Content for each tab goes here
-        Text(text = "Content for $tabTitle")
-    }
-}
+data class TabItem(
+    val title: String,
+    val unselectedIcon: ImageVector,
+    val selectedIcon: ImageVector
+)
